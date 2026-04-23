@@ -2,6 +2,7 @@ from arx_a5_python import SingleArm
 from typing import Dict, Any, List, Optional, Union
 import numpy as np
 import threading
+import queue
 import time
 from transitions import Machine
 
@@ -16,6 +17,8 @@ class BimanualArmFSM():
         self.mode = mode
         self._homing_duration = 3.0
         self._ctrl_running = True
+        self._event_queue = queue.Queue()
+        self._homing_start_time: Optional[float] = None
 
         self.machine = Machine(
             model=self,
@@ -39,30 +42,23 @@ class BimanualArmFSM():
             conditions=[lambda e: self.mode == 'infer'],
         )
         self.machine.add_transition(
-            trigger='end_task', source=['collecting', 'inferring'], dest='ready',
+            trigger='end_task', source=['collecting', 'inferring'], dest='homing',
         )
 
         self._ctrl_thread = threading.Thread(target=self._control_loop, daemon=True)
-        self._fsm_thread = threading.Thread(target=self._fsm_run, daemon=True)
+
 
         self.get_logger().info('BimanualArmFSM started.')
         self.startup_hw()
 
         self._ctrl_thread.start()
-        self._fsm_thread.start()
-
-    def _fsm_run(self):
-        self.start_homing()
-        while self._ctrl_running:
-            time.sleep(0.1)
 
     # ---- state callbacks ----
 
     def on_enter_homing(self, event):
-        self.get_logger().info('Homing started, waiting %.1fs ...' % self._homing_duration)
         self._go_home()
-        time.sleep(self._homing_duration)
-        self.finish_homing()
+        self._homing_start_time = time.perf_counter()
+        self.get_logger().info('Homing started, waiting %.1fs ...' % self._homing_duration)
 
     def on_enter_ready(self, event):
         self.get_logger().info(
@@ -86,18 +82,21 @@ class BimanualArmFSM():
     # ---- external key input ----
 
     def on_key_event(self, key: str):
-        if key == 'space' and self.is_ready():
-            self.begin_task()
-        elif key == 'space' and (self.is_collecting() or self.is_inferring()):
-            self.end_task()
+        if key == 'space':
+            self._event_queue.put('toggle_task')
+        elif key == 'esc':
+            self._event_queue.put('shutdown')
 
     # ---- control loop (180Hz) ----
 
     def _control_loop(self):
         period = 1.0 / 180.0
         self.get_logger().info('Control loop started at 180Hz.')
+        self.start_homing()
         while self._ctrl_running:
             t0 = time.perf_counter()
+            self._process_events()
+            self._process_auto_transitions()
             try:
                 if self.is_collecting():
                     self._collect_step()
@@ -113,16 +112,33 @@ class BimanualArmFSM():
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
+    def _process_events(self):
+        while True:
+            try:
+                event = self._event_queue.get_nowait()
+            except queue.Empty:
+                break
+            if event == 'toggle_task':
+                if self.is_ready():
+                    self.begin_task()
+                elif self.is_collecting() or self.is_inferring():
+                    self.end_task()
+            elif event == 'shutdown':
+                self._ctrl_running = False
+
+    def _process_auto_transitions(self):
+        if self.is_homing() and self._homing_start_time is not None:
+            if time.perf_counter() - self._homing_start_time >= self._homing_duration:
+                self._homing_start_time = None
+                self.finish_homing()
+
     # ---- placeholder methods (to be implemented) ----
 
     def _init_collect(self):
         pass
 
     def _collect_step(self):
-        try:
-            self._collect_step()
-        except:
-            ...
+        pass
         
 
     def _init_infer(self):
@@ -211,5 +227,4 @@ class BimanualArmFSM():
     def shutdown(self):
         self._ctrl_running = False
         self._ctrl_thread.join(timeout=2.0)
-        self._fsm_thread.join(timeout=2.0)
         self.get_logger().info('BimanualArmFSM shut down.')
