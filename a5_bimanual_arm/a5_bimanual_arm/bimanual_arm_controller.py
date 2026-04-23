@@ -1,72 +1,110 @@
-import rclpy
-from rclpy.node import Node
 from arx_a5_python import SingleArm
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional, Union
 import numpy as np
-import time
 import threading
-from sensor_msgs.msg import  CompressedImage
-from collections import deque
+import time
+from transitions import Machine
 
-class BimanualArmController(Node):
+class BimanualArmFSM():
 
-    def __init__(self):
-        super().__init__('bimanual_arm_controller')
-        self.get_logger().info('BimanualArmController node started.')
-        # attr
-        self.img_head_deque = deque()
-        self.img_left_deque = deque()
-        self.img_right_deque = deque()
+    states = ['initialized', 'homing', 'ready', 'collecting', 'inferring']
 
-        # declare params
-        self.declare_parameter('img_head_topic', '/camera_head/image/compressed')
-        self.declare_parameter('img_left_topic', '/camera_left/image/compressed')
-        self.declare_parameter('img_right_topic', '/camera_right/image/compressed')
-
-        # read params
-        img_head_topic = self.get_parameter('img_head_topic').get_parameter_value().string_value
-        img_left_topic = self.get_parameter('img_left_topic').get_parameter_value().string_value
-        img_right_topic = self.get_parameter('img_right_topic').get_parameter_value().string_value
-
-        # img subscription
-        self._img_deques: Dict[str, deque] = {
-            'img_head': self.img_head_deque,
-            'img_left': self.img_left_deque,
-            'img_right': self.img_right_deque,
-        }
-        img_topics = {
-            'img_head': img_head_topic,
-            'img_left': img_left_topic,
-            'img_right': img_right_topic,
-        }
-        for key, topic in img_topics.items():
-            try:
-                callback = getattr(self, f'_{key}_callback')
-                self.create_subscription(CompressedImage, topic, callback, 10)
-            except KeyError as e:
-                self.get_logger().error(f"Topic config missing: {e}")
-            except AttributeError as e:
-                self.get_logger().error(f"Callback not found for key: {key} -> {e}")
-        
-        # 启动机械臂
-        try:
-            self._startup_arms()
-        except Exception as e:
-            self.get_logger().fatal(f'Failed to startup arms: {e}')
-            raise
-        
+    def __init__(self, logger, mode: str = 'collect'):
+        if mode not in ('collect', 'infer'):
+            raise ValueError(f"mode must be 'collect' or 'infer', got '{mode}'")
+        self._logger = logger
+        self.mode = mode
+        self._homing_duration = 3.0
         self._ctrl_running = True
+
+        self.machine = Machine(
+            model=self,
+            states=BimanualArmFSM.states,
+            initial='initialized',
+            send_event=True,
+        )
+
+        self.machine.add_transition(
+            trigger='start_homing', source='initialized', dest='homing',
+        )
+        self.machine.add_transition(
+            trigger='finish_homing', source='homing', dest='ready',
+        )
+        self.machine.add_transition(
+            trigger='begin_task', source='ready', dest='collecting',
+            conditions=[lambda e: self.mode == 'collect'],
+        )
+        self.machine.add_transition(
+            trigger='begin_task', source='ready', dest='inferring',
+            conditions=[lambda e: self.mode == 'infer'],
+        )
+        self.machine.add_transition(
+            trigger='end_task', source=['collecting', 'inferring'], dest='ready',
+        )
+
         self._ctrl_thread = threading.Thread(target=self._control_loop, daemon=True)
+        self._fsm_thread = threading.Thread(target=self._fsm_run, daemon=True)
+
+        self.get_logger().info('BimanualArmFSM started.')
+        self.startup_hw()
+
         self._ctrl_thread.start()
+        self._fsm_thread.start()
+
+    def _fsm_run(self):
+        self.start_homing()
+        while self._ctrl_running:
+            time.sleep(0.1)
+
+    # ---- state callbacks ----
+
+    def on_enter_homing(self, event):
+        self.get_logger().info('Homing started, waiting %.1fs ...' % self._homing_duration)
+        self._go_home()
+        time.sleep(self._homing_duration)
+        self.finish_homing()
+
+    def on_enter_ready(self, event):
+        self.get_logger().info(
+            'Ready. Press SPACE to start %s, press ESC to quit.' % self.mode
+        )
+
+    def on_enter_collecting(self, event):
+        self.get_logger().info('Data collection started.')
+        self._init_collect()
+
+    def on_exit_collecting(self, event):
+        self.get_logger().info('Data collection stopped.')
+
+    def on_enter_inferring(self, event):
+        self.get_logger().info('Inference started.')
+        self._init_infer()
+
+    def on_exit_inferring(self, event):
+        self.get_logger().info('Inference stopped.')
+
+    # ---- external key input ----
+
+    def on_key_event(self, key: str):
+        if key == 'space' and self.is_ready():
+            self.begin_task()
+        elif key == 'space' and (self.is_collecting() or self.is_inferring()):
+            self.end_task()
+
+    # ---- control loop (180Hz) ----
 
     def _control_loop(self):
-        period = 1.0 / 100.0
-        self.get_logger().info('Control loop started at 100Hz.')
+        period = 1.0 / 180.0
+        self.get_logger().info('Control loop started at 180Hz.')
         while self._ctrl_running:
             t0 = time.perf_counter()
             try:
-                self.left_arm.gravity_compensation()
-                self.right_arm.gravity_compensation()
+                if self.is_collecting():
+                    self._collect_step()
+                elif self.is_inferring():
+                    self._infer_step()
+                else:
+                    self._gravity_compensation()
             except Exception as e:
                 self.get_logger().error(f'Control loop error: {e}')
                 break
@@ -74,42 +112,104 @@ class BimanualArmController(Node):
             sleep_time = period - elapsed
             if sleep_time > 0:
                 time.sleep(sleep_time)
-    
-    def _startup_arms(self):
-        arm_config_0: Dict[str, Any] = {
-        "can_port": "can1",
-        "urdf_name": "a5.urdf",
-        # Add necessary configuration parameters for the left arm
+
+    # ---- placeholder methods (to be implemented) ----
+
+    def _init_collect(self):
+        pass
+
+    def _collect_step(self):
+        try:
+            self._collect_step()
+        except:
+            ...
+        
+
+    def _init_infer(self):
+        pass
+
+    def _infer_step(self):
+        pass
+
+    # ---- hardware methods ----
+
+    def _go_home(self) -> Dict[str, bool]:
+        return {"left": self.left_arm.go_home(), "right": self.right_arm.go_home()}
+
+    def _gravity_compensation(self) -> Dict[str, bool]:
+        return {
+            "left": self.left_arm.gravity_compensation(),
+            "right": self.right_arm.gravity_compensation(),
         }
 
+    def _set_joint_positions(
+        self,
+        positions: Dict[str, Union[float, List[float], np.ndarray]],
+        joint_names: Optional[Dict[str, Union[str, List[str]]]] = None,
+        **kwargs
+    ):
+        if "left" in positions:
+            self.left_arm.set_joint_positions(
+                positions["left"],
+                joint_names.get("left") if joint_names else None,
+                **kwargs
+            )
+        if "right" in positions:
+            self.right_arm.set_joint_positions(
+                positions["right"],
+                joint_names.get("right") if joint_names else None,
+                **kwargs
+            )
+
+    def _get_joint_positions(
+        self,
+        arm: str = "both",
+        joint_names: Optional[Dict[str, Union[str, List[str]]]] = None,
+    ) -> Dict[str, np.ndarray]:
+        result = {}
+        if arm in ["left", "both"]:
+            result["left"] = self.left_arm.get_joint_positions(
+                joint_names.get("left") if joint_names else None
+            )
+        if arm in ["right", "both"]:
+            result["right"] = self.right_arm.get_joint_positions(
+                joint_names.get("right") if joint_names else None
+            )
+        return result
+
+    def get_joint_velocities(
+        self,
+        arm: str = "both",
+        joint_names: Optional[Dict[str, Union[str, List[str]]]] = None,
+    ) -> Dict[str, np.ndarray]:
+        result = {}
+        if arm in ["left", "both"]:
+            result["left"] = self.left_arm.get_joint_velocities(
+                joint_names.get("left") if joint_names else None
+            )
+        if arm in ["right", "both"]:
+            result["right"] = self.right_arm.get_joint_velocities(
+                joint_names.get("right") if joint_names else None
+            )
+        return result
+
+    def get_logger(self):
+        return self._logger
+
+    def startup_hw(self):
+        arm_config_0: Dict[str, Any] = {
+            "can_port": "can1",
+            "urdf_name": "a5.urdf",
+        }
         arm_config_1: Dict[str, Any] = {
-        "can_port": "can3",
-        "urdf_name": "a5.urdf",
-        # Add necessary configuration parameters for the right arm
+            "can_port": "can3",
+            "urdf_name": "a5.urdf",
         }
         self.left_arm = SingleArm(arm_config_0)
         self.right_arm = SingleArm(arm_config_1)
 
-    def _img_head_callback(self, msg: CompressedImage):
-        self.img_head_deque.pop(msg)
-
-    def _img_left_callback(self, msg: CompressedImage):
-        ...
-
-    def _img_right_callback(self, msg: CompressedImage):
-        ...
-
-
-
-def main(args=None):
-    rclpy.init(args=args)
-    node = BimanualArmController()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node._ctrl_running = False
-        node._ctrl_thread.join(timeout=1.0)
-        node.destroy_node()
-        rclpy.shutdown()
+    def shutdown(self):
+        self._ctrl_running = False
+        self._ctrl_thread.join(timeout=2.0)
+        self._fsm_thread.join(timeout=2.0)
+        self.get_logger().info('BimanualArmFSM shut down.')

@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools', 'transitions'],
     python_requires='>=3.8',
     zip_safe=True,
     maintainer='tony',
@@ -25,7 +25,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'bimanual_arm_controller = a5_bimanual_arm.bimanual_arm_controller:main',
+            'bimanual_arm_controller = a5_bimanual_arm.bimanual_arm_controller_node:main',
         ],
     },
 )
