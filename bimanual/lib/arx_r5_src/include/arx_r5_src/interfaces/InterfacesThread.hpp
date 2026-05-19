@@ -24,7 +24,9 @@ namespace arx::r5
 
         std::vector<double> getJointVelocities();
 
-        std::vector<double> getJointCurrent();
+        std::vector<double> getJointTorque();
+
+        std::vector<double> getGravityTorque();
 
         Eigen::Isometry3d getEndPose();
 
@@ -46,6 +48,8 @@ namespace arx::r5
 
         void setEndEffectorMass(double mass);
         std::vector<int> getErrorCode();
+        std::vector<double> getExtWrench();
+        void setExtWrench(std::vector<double> wrench);
 
         /// @brief 状态枚举
         enum state

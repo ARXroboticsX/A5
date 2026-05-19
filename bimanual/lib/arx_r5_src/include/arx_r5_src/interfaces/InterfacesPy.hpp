@@ -27,9 +27,9 @@ namespace arx::r5
         /// @return 7维vector
         std::vector<double> get_joint_velocities();
 
-        /// @brief 获取关节电流
+        /// @brief 获取关节扭矩
         /// @return 7维vector
-        std::vector<double> get_joint_currents();
+        std::vector<double> get_joint_torques();
 
         /// @brief 获取末端位姿
         /// @return 三维矢量+四元数组成的7维vector
@@ -39,6 +39,14 @@ namespace arx::r5
         /// @return xyzrpy组成的6维vector
         std::vector<double> get_ee_pose_xyzrpy();
         void arx_x(double arx1, double arx2, double arx3);
+
+        /// @brief 获取末端外力估计（广义动量观测器）
+        /// @return 6维vector [Fx, Fy, Fz, Tx, Ty, Tz]，单位 N / N·m
+        std::vector<double> get_ext_wrench();
+
+        /// @brief 设置末端外力指令，在重力补偿模式下叠加到前馈扭矩
+        /// @param wrench 6维vector [Fx, Fy, Fz, Tx, Ty, Tz]，单位 N / N·m
+        void set_ext_wrench(std::vector<double> wrench);
 
     private:
         class impl;

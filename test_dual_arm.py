@@ -1,6 +1,7 @@
 from bimanual import SingleArm
 from typing import Dict, Any
 import numpy as np
+import time
 
 def test_dual_arm(single_arm0: SingleArm, single_arm1: SingleArm,single_arm_head:SingleArm):
     #single_arm.go_home()
@@ -9,6 +10,8 @@ def test_dual_arm(single_arm0: SingleArm, single_arm1: SingleArm,single_arm_head
         single_arm0.gravity_compensation()
         single_arm1.gravity_compensation()
         single_arm_head.gravity_compensation()
+
+        time.sleep(0.01)
 
 
 

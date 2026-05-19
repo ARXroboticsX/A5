@@ -45,6 +45,8 @@ def test_single_arm(single_arm: SingleArm, duration: float = 10.0, dt: float = 0
         # print(single_arm.get_joint_currents())
         # print(single_arm.get_ee_pose()) 
 
+        time.sleep(0.01)
+
         
 if __name__ == "__main__":
     arm_config: Dict[str, Any] = {

@@ -206,10 +206,10 @@ class SingleArm:
         """
         return self.arm.get_joint_velocities()
 
-    def get_joint_currents(
+    def get_joint_torques(
         self, joint_names: Optional[Union[str, List[str]]] = None
     ) -> Union[float, List[float]]:
-        return self.arm.get_joint_currents()
+        return self.arm.get_joint_torques()
 
     def get_ee_pose(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -222,6 +222,12 @@ class SingleArm:
         xyzwxyz = self.arm.get_ee_pose()
 
         return xyzwxyz
+    
+    def get_ext_wrench(self):
+        return self.arm.get_ext_wrench()
+    
+    def set_ext_wrench(self, wrench: list):
+        self.arm.set_ext_wrench(wrench)
 
     def get_ee_pose_xyzrpy(
         self,

@@ -3,22 +3,22 @@
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="A5S">
+  name="A5">
   <link
     name="base_link">
     <inertial>
       <origin
-        xyz="-0.00013359 6.672E-05 0.031672"
+        xyz="-0.00357076636491138 4.19535398768767E-05 0.0293095941071391"
         rpy="0 0 0" />
       <mass
-        value="0.42272" />
+        value="0.652885471564488" />
       <inertia
-        ixx="0.00019"
-        ixy="0.00000"
-        ixz="0.00000"
-        iyy="0.00019"
-        iyz="0.00000"
-        izz="0.00020" />
+        ixx="0.00067000"
+        ixy="-0.00000033"
+        ixz="-0.00005918"
+        iyy="0.00070852"
+        iyz="-0.00000295"
+        izz="0.00063394" />
     </inertial>
     <visual>
       <origin
@@ -26,12 +26,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/base_link.STL" />
+          filename="package://A5/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.89804 0.91765 0.92941 1" />
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
       </material>
     </visual>
     <collision>
@@ -40,7 +40,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/base_link.STL" />
+          filename="package://A5/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -48,17 +48,17 @@
     name="link1">
     <inertial>
       <origin
-        xyz="0.00503954826793295 -0.00774070193988266 0.0208969420816373"
+        xyz="0.00728534808970327 -0.00719684406321904 0.0219997629210604"
         rpy="0 0 0" />
       <mass
-        value="0.0968040209395549" />
+        value="0.135332862135994" />
       <inertia
-        ixx="0.00011"
-        ixy="-0.00001"
-        ixz="0.00001"
-        iyy="0.00005"
-        iyz="-0.00001"
-        izz="0.00010" />
+        ixx="0.00018852"
+        ixy="0.00000605"
+        ixz="-0.00002232"
+        iyy="0.00008862"
+        iyz="0.00001221"
+        izz="0.00017151" />
     </inertial>
     <visual>
       <origin
@@ -66,12 +66,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link1.STL" />
+          filename="package://A5/meshes/link1.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.564705882352941 0.564705882352941 0.564705882352941 1" />
+          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
       </material>
     </visual>
     <collision>
@@ -80,7 +80,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link1.STL" />
+          filename="package://A5/meshes/link1.STL" />
       </geometry>
     </collision>
   </link>
@@ -88,7 +88,7 @@
     name="joint1"
     type="revolute">
     <origin
-      xyz="0 0 0.0565"
+      xyz="0 0 0.0695"
       rpy="0 0 0" />
     <parent
       link="base_link" />
@@ -106,17 +106,17 @@
     name="link2">
     <inertial>
       <origin
-        xyz="-0.050770611851633 -0.000307502550891422 0.0109031174570787"
+        xyz="-0.0927719161474521 -0.00314351894751758 0.0234568208206985"
         rpy="0 0 0" />
       <mass
-        value="0.922016949148399" />
+        value="1.04903589366043" />
       <inertia
-        ixx="0.00068"
-        ixy="0.00000"
-        ixz="-0.00092"
-        iyy="0.00463"
-        iyz="0.00000"
-        izz="0.00454" />
+        ixx="0.00134454"
+        ixy="-0.00013587"
+        ixz="0.00249161"
+        iyy="0.01044670"
+        iyz="0.00005086"
+        izz="0.01000025" />
     </inertial>
     <visual>
       <origin
@@ -124,12 +124,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link2.STL" />
+          filename="package://A5/meshes/link2.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+          rgba="0.866666666666667 0.909803921568627 1 1" />
       </material>
     </visual>
     <collision>
@@ -138,7 +138,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link2.STL" />
+          filename="package://A5/meshes/link2.STL" />
       </geometry>
     </collision>
   </link>
@@ -146,7 +146,7 @@
     name="joint2"
     type="revolute">
     <origin
-      xyz="0.02 0 0.047"
+      xyz="0.02 0 0.0435"
       rpy="0 0 0" />
     <parent
       link="link1" />
@@ -164,17 +164,17 @@
     name="link3">
     <inertial>
       <origin
-        xyz="0.0817803379922626 -0.000659690341437718 3.80441290877276E-05"
+        xyz="0.108285762416509 -0.000835709969095932 0.00030963081502397"
         rpy="0 0 0" />
       <mass
-        value="0.887837614634739" />
+        value="0.856398932000594" />
       <inertia
-        ixx="0.00042"
-        ixy="0.00009"
-        ixz="0.00000"
-        iyy="0.00696"
-        iyz="0.00000"
-        izz="0.00693" />
+        ixx="0.00048982"
+        ixy="-0.00004185"
+        ixz="0.00000783"
+        iyy="0.00556680"
+        iyz="0.00000058"
+        izz="0.00551305" />
     </inertial>
     <visual>
       <origin
@@ -182,12 +182,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link3.STL" />
+          filename="package://A5/meshes/link3.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+          rgba="1 1 1 1" />
       </material>
     </visual>
     <collision>
@@ -196,7 +196,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link3.STL" />
+          filename="package://A5/meshes/link3.STL" />
       </geometry>
     </collision>
   </link>
@@ -204,7 +204,7 @@
     name="joint3"
     type="revolute">
     <origin
-      xyz="-0.21 -3E-05 0.06"
+      xyz="-0.21 0 0.06"
       rpy="0 0 0" />
     <parent
       link="link2" />
@@ -222,17 +222,17 @@
     name="link4">
     <inertial>
       <origin
-        xyz="0.0421074239683916 0.00420106485375121 -0.0350192219762367"
+        xyz="0.0459479699688412 0.0051139610934357 -0.0441791004569489"
         rpy="0 0 0" />
       <mass
-        value="0.118174840291438" />
+        value="0.192580100804097" />
       <inertia
-        ixx="0.00019"
-        ixy="-0.00002"
-        ixz="-0.00009"
-        iyy="0.00024"
-        iyz="0.00002"
-        izz="0.00015" />
+        ixx="0.00035858"
+        ixy="0.00003365"
+        ixz="0.00014324"
+        iyy="0.00043131"
+        iyz="-0.00004342"
+        izz="0.00025083" />
     </inertial>
     <visual>
       <origin
@@ -240,12 +240,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link4.STL" />
+          filename="package://A5/meshes/link4.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.792156862745098 0.819607843137255 0.929411764705882 1" />
+          rgba="1 1 1 1" />
       </material>
     </visual>
     <collision>
@@ -254,7 +254,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link4.STL" />
+          filename="package://A5/meshes/link4.STL" />
       </geometry>
     </collision>
   </link>
@@ -262,8 +262,8 @@
     name="joint4"
     type="revolute">
     <origin
-      xyz="0.189 -0.0001 0"
-      rpy="-3.1416 0 0" />
+      xyz="0.189 0 0"
+      rpy="3.1416 0 0" />
     <parent
       link="link3" />
     <child
@@ -280,17 +280,17 @@
     name="link5">
     <inertial>
       <origin
-        xyz="0.00358074490473213 -1.54277384272232E-05 0.0533252279190407"
+        xyz="0.00311023527000875 -1.47758007803533E-05 0.0546135870003345"
         rpy="0 0 0" />
       <mass
-        value="0.636013398718114" />
+        value="0.658983613915147" />
       <inertia
-        ixx="0.00084"
-        ixy="0.00000"
-        ixz="0.00007"
-        iyy="0.00082"
-        iyz="0.00000"
-        izz="0.00026" />
+        ixx="0.00090701"
+        ixy="0.00000056"
+        ixz="-0.00004724"
+        iyy="0.00089429"
+        iyz="-0.00000031"
+        izz="0.00027608" />
     </inertial>
     <visual>
       <origin
@@ -298,7 +298,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link5.STL" />
+          filename="package://A5/meshes/link5.STL" />
       </geometry>
       <material
         name="">
@@ -312,7 +312,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link5.STL" />
+          filename="package://A5/meshes/link5.STL" />
       </geometry>
     </collision>
   </link>
@@ -320,7 +320,7 @@
     name="joint5"
     type="revolute">
     <origin
-      xyz="0.07025 -5E-05 -0.0845"
+      xyz="0.077 0 -0.0845"
       rpy="0 0 0" />
     <parent
       link="link4" />
@@ -338,17 +338,17 @@
     name="link6">
     <inertial>
       <origin
-        xyz="0.0548428859313633 2.60845782833845E-05 -0.000213553766113872"
+        xyz="0.0583019032342906 0.000159801680679902 -0.0078347977753456"
         rpy="0 0 0" />
       <mass
-        value="0.68" />
+        value="0.628913750332511" />
       <inertia
-        ixx="0.00033"
-        ixy="0.00000"
-        ixz="0.00000"
-        iyy="0.00046"
-        iyz="0.00004"
-        izz="0.00047" />
+        ixx="0.00078878"
+        ixy="-0.00000197"
+        ixz="-0.00006405"
+        iyy="0.00103915"
+        iyz="-0.00004303"
+        izz="0.00073414" />
     </inertial>
     <visual>
       <origin
@@ -356,12 +356,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link6.STL" />
+          filename="package://A5/meshes/link6.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="0.866666666666667 0.909803921568627 1 1" />
       </material>
     </visual>
     <collision>
@@ -370,7 +370,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://A5S/meshes/link6.STL" />
+          filename="package://A5/meshes/link6.STL" />
       </geometry>
     </collision>
   </link>
