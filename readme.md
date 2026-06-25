@@ -1,8 +1,5 @@
 # A5 python SDK
 
-# 仓库地址
-
-https://github\.com/ARXroboticsX/A5
 
 # 00硬件设备连接
 
