@@ -13,12 +13,6 @@ def test_single_arm(single_arm: SingleArm, duration: float = 10.0, dt: float = 0
         # success = single_arm.set_joint_positions(positions=positions, joint_names=joint_names)        
         # single_arm.set_gripper_pos(-1)
 
-        #################
-        # position = np.array([0.0, 0.0, 0.03])  # x, y, z 位置
-        # quaternion = np.array([1.0, 0.0, 0.0, 0.0])  # 四元数表示方向
-        # single_arm.set_ee_pose(pos=position, quat=quaternion)
-        # single_arm.set_gripper_pos(-1)
-
         ################# pos control
         # xyzrpy = np.array([0.0, 0.0, 0.03,0.0, 0.0, 0.0])  # x, y, z 位置
         # single_arm.set_ee_pose_xyzrpy(xyzrpy)

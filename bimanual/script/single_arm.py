@@ -88,7 +88,7 @@ class SingleArm:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         urdf_path = os.path.join(current_dir,urdf_name)
         self.arm = arx.InterfacesPy(urdf_path,config.get("can_port", "can0"))
-        self.arm.arx_x(500,2000,10)
+        self.arm.arx_x(35000,6000,10)
 
     def get_joint_names(self) -> List[str]:
         """
@@ -210,6 +210,11 @@ class SingleArm:
         self, joint_names: Optional[Union[str, List[str]]] = None
     ) -> Union[float, List[float]]:
         return self.arm.get_joint_torques()
+        
+    def get_joint_currents(
+        self, joint_names: Optional[Union[str, List[str]]] = None
+    ) -> Union[float, List[float]]:
+        return self.arm.get_joint_currents()
 
     def get_ee_pose(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -226,8 +231,17 @@ class SingleArm:
     def get_ext_wrench(self):
         return self.arm.get_ext_wrench()
     
-    def set_ext_wrench(self, wrench: list):
-        self.arm.set_ext_wrench(wrench)
+    def set_ext_wrench(self, wrench: list,k = 2):
+        self.arm.set_ext_wrench(wrench,k)
+
+    def get_gripper_ext_torque(self):
+        return self.arm.get_gripper_ext_torque()
+
+    def set_gripper_ext_torque(self,torque):
+        self.arm.set_gripper_ext_torque(torque)
+
+    def set_slave_gripper_position(self,position):
+        self.arm.set_slave_gripper_position(position)
 
     def get_ee_pose_xyzrpy(
         self,

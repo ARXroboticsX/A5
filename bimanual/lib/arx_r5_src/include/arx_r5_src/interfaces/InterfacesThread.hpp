@@ -47,9 +47,12 @@ namespace arx::r5
         void arx_x(double arx1, double arx2, double arx3);
 
         void setEndEffectorMass(double mass);
-        std::vector<int> getErrorCode();
+        std::string getErrorMsg();
         std::vector<double> getExtWrench();
-        void setExtWrench(std::vector<double> wrench);
+        void setExtWrench(std::vector<double> wrench, double k = 1.0);
+        double getGripperExtTorque();
+        void setGripperExtTorque(double torque);
+        void setSlaveGripperPosition(double pos);
 
         /// @brief 状态枚举
         enum state
